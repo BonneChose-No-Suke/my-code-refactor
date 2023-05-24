@@ -12,9 +12,13 @@ export const Refactor = () => {
   };
 
   const onCallRefactor = async () => {
-    !code && alert('コードを入力してください。');
-    const data = code && (await getData(code));
-    setResponse(data);
+    if (!code) {
+      alert('コードを入力してください。');
+      return;
+    }
+    const data = await getData(code);
+
+    setResponse(data.result);
   };
   return (
     <>
@@ -43,6 +47,13 @@ export const Refactor = () => {
 };
 
 const getData = async (code: string) => {
-  const res = await axios.post('http://localhost:3000/api', { code: code });
+  const res = await axios
+    .post('http://localhost:3000/api', { code: code })
+    .then((res) => {
+      return res;
+    })
+    .catch((err) => {
+      return err;
+    });
   return res.data;
 };

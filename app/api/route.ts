@@ -1,12 +1,6 @@
 import { NextResponse } from 'next/server';
-import { Configuration, OpenAIApi } from 'openai';
-import { openAiReq } from '../utils/type';
-
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-const openai = new OpenAIApi(configuration);
+import { apiCallBody } from '../utils/type';
+import axios from 'axios';
 
 export const GET = async () => {
   const res = await fetch('https://api.github.com/repos/vercel/next.js');
@@ -15,12 +9,27 @@ export const GET = async () => {
   return NextResponse.json(data);
 };
 
-export const POST = async (req: openAiReq) => {
-  const edit = await openai.createEdit({
-    model: 'code-davinci-edit-001',
-    input: req.body?.code,
-    instruction: 'Refactor the code to make it easier to read',
-  });
+export const POST = async (req: apiCallBody) => {
+  const URL = 'https://api.openai.com/v1/edits';
+  const API_KEY = process.env.OPENAI_API_KEY;
 
-  NextResponse.json({ result: edit.data.choices[0].text });
+  try {
+    const response = await axios.post(
+      URL,
+      {
+        model: 'code-davinci-edit-001',
+        instruction: 'Refactor given React code.',
+        input: req.body.code,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      }
+    );
+    return NextResponse.json({ result: response.data.choices[0].text });
+  } catch (error) {
+    console.log(error);
+  }
 };
